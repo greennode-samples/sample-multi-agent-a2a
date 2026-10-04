@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+.pytest_cache
+.ruff_cache
+.env
+.env.*
+!.env.example
+compose/
+.greennode.json
+__pycache__/
+*.pyc
+docs/
+tests/
