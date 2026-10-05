@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trip Concierge — điều phối nhiều agent qua A2A</title>
+  <meta name="description" content="Sample SPA: một agent điều phối trên GreenNode AgentBase, giao việc cho các agent khác qua giao thức A2A và gọi công cụ qua MCP Gateway.">
+  <meta property="og:title" content="Trip Concierge — GreenNode AgentBase sample">
+  <meta property="og:description" content="Agent điều phối: lịch trình (travel-buddy), đặt bàn (zalo-restaurant) và dữ liệu chứng khoán (MCP) trong một câu hỏi.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 2-column layout: sidebar (user, session, agents) | chat -->
+  <div id="layout">
+
+    <!-- ===== LEFT COLUMN: user, session and the connected agents ===== -->
+    <aside class="sidebar" aria-label="Người dùng, phiên và agent">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <circle cx="5" cy="6" r="2"/>
+            <circle cx="19" cy="6" r="2"/>
+            <circle cx="12" cy="20" r="2"/>
+            <path d="M10 10.4 6.4 7.4M14 10.4l3.6-3M12 15v3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">Trip Concierge</div>
+          <div class="brand-sub">Điều phối agent qua A2A</div>
+        </div>
+      </div>
+
+      <div class="side-scroll">
+        <section class="side-section">
+          <div class="side-title">Người dùng</div>
+          <div class="side-form">
+            <input id="userInput" class="side-input" type="text" maxlength="128"
+                   placeholder="vd: mai-le" autocomplete="off" spellcheck="false"
+                   aria-label="Mã người dùng">
+          </div>
+          <div class="side-hint">Mã này được chuyển cho từng agent: mỗi agent nhớ bạn riêng theo mã này.</div>
+        </section>
+
+        <section class="side-section">
+          <div class="side-title">Phiên hội thoại</div>
+          <button id="newSessionBtn" class="btn ghost small wide" type="button">Hội thoại mới</button>
+        </section>
+
+        <section class="side-section">
+          <div class="side-title">Agent kết nối</div>
+          <div id="agentsList" class="list"></div>
+        </section>
+      </div>
+
+      <!-- Agent info (GET /api/info) -->
+      <div class="info-box" id="infoBox">
+        <div class="info-title">Thông tin agent</div>
+        <div class="info-line"><span>Agent</span><b id="infoAgent">—</b></div>
+        <div class="info-line"><span>Memory ID</span><b id="infoMemory">—</b></div>
+        <div class="info-line"><span>Model</span><b id="infoModel">—</b></div>
+        <div class="info-line"><span>Gateway</span><b id="infoGateway">—</b></div>
+      </div>
+    </aside>
+
+    <!-- ===== RIGHT COLUMN: conversation ===== -->
+    <main class="chat">
+      <header class="chat-header">
+        <div class="chips">
+          <span class="chip chip-user" id="chipUser">@—</span>
+          <span class="chip" id="chipSession">—</span>
+          <span class="chip chip-status"><span class="dot" id="statusDot"></span>AgentBase</span>
+        </div>
+        <button id="sidebarToggle" class="btn ghost small only-narrow" type="button">Agent</button>
+      </header>
+
+      <!-- Message bubbles are rendered by app.js -->
+      <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+
+      <footer class="composer">
+        <div class="composer-box">
+          <textarea id="composerInput" rows="1"
+            placeholder="Nhập yêu cầu cho Trip Concierge…  (Enter gửi · Shift+Enter xuống dòng)"></textarea>
+          <button id="sendBtn" class="btn primary send" type="button" aria-label="Gửi tin nhắn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h13M12 5l7 7-7 7"/>
+            </svg>
+            <span>Gửi</span>
+          </button>
+        </div>
+        <div class="composer-hint">Một câu hỏi có thể cần nhiều agent: Trip Concierge chia việc, hỏi từng agent rồi tổng hợp.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Error toast (hides after 6 s, has a close button) -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive">
+    <span id="toastMsg"></span>
+    <button id="toastClose" class="toast-close" type="button" aria-label="Đóng thông báo">✕</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
