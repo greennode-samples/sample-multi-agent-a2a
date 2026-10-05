@@ -1,0 +1,62 @@
+# Local development: the orchestrator, and with `--profile all` the three sample services it talks to.
+#
+#   cp .env.example .env                       # LLM key, memory id, GREENNODE_CLIENT_ID / _SECRET
+#   docker compose up --build                  # the orchestrator only: point .env at your agents
+#   docker compose --profile all up --build    # + travel-buddy, zalo-restaurant and the two MCP servers
+#   open http://localhost:8080
+#
+# The sibling agents are NOT self-contained: they need their own GreenNode resources (LLM key, Memory
+# with its strategies, an MCP Gateway connector for Tavily, a service account). Copy
+# compose/travel-buddy.env.example and compose/zalo-restaurant.env.example to compose/*.env and fill
+# them in, see the README. They are built straight from GitHub (branch main) the first time.
+name: trip-concierge
+
+services:
+  orchestrator:
+    build:
+      context: .
+    env_file: .env
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  travel-buddy:
+    profiles: [all]
+    build:
+      context: https://github.com/greennode-samples/sample-travel-buddy.git#main
+    env_file: compose/travel-buddy.env
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  zalo-restaurant:
+    profiles: [all]
+    build:
+      context: https://github.com/greennode-samples/sample-zalo-restaurant.git#main
+    env_file: compose/zalo-restaurant.env
+    environment:
+      MCP_RESTAURANT_URL: http://restaurant-mcp-server:8080/mcp
+    ports:
+      - "127.0.0.1:8082:8080"
+
+  # The MCP server of zalo-restaurant (its Dockerfile is in src/mcp-server).
+  restaurant-mcp-server:
+    profiles: [all]
+    build:
+      context: https://github.com/greennode-samples/sample-zalo-restaurant.git#main:src/mcp-server
+    environment:
+      # Local use only. In production the server requires MCP_API_KEYS (fail-closed).
+      ALLOW_ANONYMOUS: "true"
+      PORT: "8080"
+      MCP_DB_PATH: /app/data/restaurant.db
+    volumes:
+      - restaurant_data:/app/data
+
+  stock-mcp-server:
+    profiles: [all]
+    build:
+      context: https://github.com/greennode-samples/sample-mcp-stock-server.git#main
+    environment:
+      # Local use only. In production the server requires MCP_API_KEYS (fail-closed).
+      ALLOW_ANONYMOUS: "true"
+
+volumes:
+  restaurant_data:

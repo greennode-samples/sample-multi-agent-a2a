@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            src/backend/requirements.txt
+            requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check --select F,E9,B,UP,SIM --target-version py312 src tests
+      - name: Run tests
+        run: pytest -q
+      - name: Syntax check frontend
+        run: node --check src/frontend/app.js
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t trip-concierge:ci .
+
+  compose-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate docker-compose.yml with and without the all profile
+        run: |
+          cp .env.example .env
+          docker compose config -q
+          for example in compose/*.env.example; do cp "$example" "${example%.example}"; done
+          docker compose --profile all config -q
